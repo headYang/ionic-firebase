@@ -35,4 +35,12 @@
       <button ion-button full (click) = "addTransaction()">Add Transaction</button>
     </ion-col>
   </ion-row>
+  <ion-card [hidden] = "!chartData">
+    <ion-card-header>
+      Analytics
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #valueBarsCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

@@ -3,6 +3,7 @@ import { NavController, ToastController } from 'ionic-angular';
 import { Observable } from 'rxjs/Observable';
 import { AngularFireList } from 'angularfire2/database/interfaces';
 import { AngularFireDatabase } from 'angularfire2/database';
+import { Chart } from 'chart.js';
 
 export interface Item {
   value: number;
@@ -42,13 +43,12 @@ export class HomePage {
   ionViewDidLoad() {
     this.ref = this.db.list<Item>('transactions', ref => ref.orderByChild('month'));
     this.ref.valueChanges().subscribe(result => {
-      console.log('asdf');
       if(this.chartData) {
         this.updateCharts(result);
       } else {
         this.createCharts(result);
       }
-    },err => console.log('error happen'));
+    });
   }
   addTransaction() {
     this.ref.push(this.transaction).then(() => {
@@ -90,10 +90,46 @@ export class HomePage {
     return Object.keys(reportByMonth).map(a => reportByMonth[a]);
   }
   createCharts(data) {
+    this.chartData = data;
 
+    let chartData = this.getReportValues();
+    console.log('my array: ', chartData);
+
+    this.valueBarsChart = new Chart(this.valueBarCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(this.months).map(a => this.months[a].name),
+        datasets: [
+          {
+            data: chartData,
+            backgroundColor: '#32db64'
+          }
+        ]
+      },
+      options: {
+        legend: {
+          display: false
+        },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItems, data) {
+              return data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]+'$';
+
+            }
+          }
+        },
+
+
+      }
+    })
   }
   updateCharts(data) {
-
+    this.chartData = data;
+    let chartData = this.getReportValues();
+    this.valueBarsChart.data.datasets.forEach((dataset) => {
+      dataset.data = chartData;
+    })
+    this.valueBarsChart.update();
   }
 
 }
